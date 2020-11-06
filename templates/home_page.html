@@ -4,3 +4,8 @@
     <h1> Home Page</h1>
 {% endblock %}
 
+{% block main %}
+    <div class = "col-md-2"></div>
+    <div class = "col-md-8"></div>
+    {% if not stocks %}
+        <h5>You currently do not own any shares. Please go to <a href = "{{ url_for('buy') }}">buy</a> some. </h5>
