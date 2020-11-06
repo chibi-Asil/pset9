@@ -1,4 +1,8 @@
+# PSET9: FINANCE
+# https://cs50.harvard.edu/extension/2020/fall/psets/9/finance/
 import os
+import re
+
 
 from cs50 import SQL
 from flask import Flask, flash, redirect, render_template, request, session
@@ -120,7 +124,31 @@ def quote():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user"""
-    return apology("TODO")
+    # Require that a user input in a username, implemented as a text field whose name is username./ Render an apology if the user's input is blank or the username already exists
+    # Validate submission
+    if request.method == "POST":
+        # Ask for the username
+        if not request.form.get("username"):
+            return apology("Please input in your username, puta")
+        # Please submit the password
+        elif not request.form.get("password") or not request.form.get("confirm_password"):
+            return apology("Please input in your password")
+        elif not request.form.get("password") != request.form.get("confirm_password"):
+            return apology("Please ensure that the passwords match one another, puta.")
+    # Ensuring that the username is unique
+        rows = db.execute("SELECT * FROM users WHERE username = :username", uusername = request.form.get("username"))
+        if len(rows) >= 1:
+            return apology("Please provide us with a new username. The one you had provided has already been taken.")
+    # Remember registrant
+        db.execute("INSERT INTO users (username, password) VALUES(?, ?)", username = request.form.get("username"), password = check_password_hash.encrypt(request.form.get("password")))
+    # Remembering session
+        rows = db.execute("SLECT * FROM users WHERE username = :username", username = request.form.get("username"))
+        session["user_id"] = rows[0]["id"]
+
+    # Redirect to home page
+        return redirect(url_for("/homepage.html"))
+    else:
+        return render_template("login.html")
 
 
 @app.route("/sell", methods=["GET", "POST"])
