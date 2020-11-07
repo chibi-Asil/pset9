@@ -1,0 +1,24 @@
+{% extends "layout.html %}
+
+{% block title %}
+    Price Quote
+{% endblock %}
+
+{% block main %}
+    <table id = "t01">
+        <thead>
+            <tr>
+                <th>Symbol</th>
+                <th>Company Name</th>
+                <th>Price Per Share</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td> {{ stock['symbol'] }} </td>
+                <td> {{ stock['name'] }}</td>
+                <td> {{ stock['price'] }}</td>
+            </tr>
+        </tbody>
+    </table>
+{% endblock %}
