@@ -118,7 +118,16 @@ def logout():
 @login_required
 def quote():
     """Get stock quote."""
-    return apology("TODO")
+    # Require that a user input a stock's symbol, implemented as a text field whose name is symbol
+    # Submit the user's input via POST to /quote
+    if request.method == "POST":
+        # Stock is a dictionary where the keys are "name", "price", and "symbol"
+        stock = lookup(request.form.get("symbol"))
+        if not request.form.get("symbol"):
+            return apology("Please input in the stock symbol")
+        else:
+            return redirect("/quoted.html", stock = stock)
+    return render_template("/quote.html")
 
 
 @app.route("/register", methods=["GET", "POST"])
