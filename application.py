@@ -135,42 +135,40 @@ def register():
     """Register user"""
     # Require that a user input in a username, implemented as a text field whose name is username./ Render an apology if the user's input is blank or the username already exists
     # Validate submission
-
     if request.method == "POST":
         # Ask for the username
         if not request.form.get("username"):
-            return apology("Please input in your username, puta", 400)
+            return apology("Please input in your username, puta", 403)
         # Please submit the password
         elif not request.form.get("password"):
-            return apology("Please input in your password", 400)
-        # Ensuring that password and confirmation
-        elif not request.form.get("password") == request.form.get("confirmation"):
-            return apology("Passwords do not match", 400)
+            return apology("Please input in your password", 403)
+        # Check50 requires you to include a confirm your password section
+        elif not request.form.get("password") != request.form.get("confirmation"):
+            return apology("Are you sure you aren't trying to steal someone's funds? Please input the correct password. Remember, we are always watching.", 403)
 
+    ## Creation of variables
         username = request.form.get("username")
         password = request.form.get("password")
-
-    # Encrypting password
-        encrypt = check_password_hash.encrypt(request.form.get("password"))
+        confirmation = request.form.get("confirmation")
 
     # Ensuring that the username is unique
-        unique = db.execute("SELECT * FROM users WHERE username = :username", username = username)
+        unique = db.execute("SELECT username FROM users WHERE username = :username", username = username.request.form.get("username"))
 
-        if len(unique) >= 1:
-            return apology("Please provide us with a new username. The one you had provided has already been taken.", 400)
+        if len(unique) != 0:
+            return render_template("login.html", error = "Sorry but thec username already exists! Please enter in a new one")
         else:
-            rows = db.execute("INSERT INTO users (id, username, password) VALUES(NULL, :username, :password)", username = username.form.get("username"), password = password)
+            encrypted = check_password_hash.encrypt(request.form.get("password"))
+            rows = db.execute("INSERT INTO users (username, password) VALUES(:username, :password)", username = username.form.get("username"), password = encrypted)
 
     # Remembering session
         #rows = db.execute("SELECT * FROM users WHERE username = :username", username = request.form.get("username"))
-        session["user_id"] = new_user_id
+            session["user_id"] = rows[0]["id"]
     # Confirmation that the user has registered
         flash("Congrats on joining C$50 Finance. Please do not go bankrupt playing with stocks.")
     # Redirect to home page
-        return redirect(url_for('homepage'))
+        return redirect("/")
     else:
-        return render_template("/login.html")
-
+        return render_template("login.html")
 
 @app.route("/sell", methods=["GET", "POST"])
 @login_required
