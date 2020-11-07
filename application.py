@@ -57,7 +57,43 @@ def index():
 @login_required
 def buy():
     """Buy shares of stock"""
-    return apology("TODO")
+    # Require that a user input a stock’s symbol, implemented as a text field whose name is symbol. Render an apology if the input is blank or the symbol does not exist (as per the return value of lookup).
+    if request.method == "POST":
+    # Need to define symbol and price
+        symbol = request.form.get("symbol")
+        shares = request.form.get("shares")
+        price = request.form.get("price")
+
+        # Need to ensure that the customer can not buy a non-integer of a share nor a negative number
+        if not request.form.get("shares").isdigit():
+            return apology("Are you trying to troll us? You can't buy a negative stock. You can not buy a fraction of a stock.")
+
+        # So the customer know that s/he is not a broke ass
+        cash_balance = db.execute("SELECT cash FROM users WHERE id = :id", id = session["user_id"])
+
+        # Need to ensure that the stock ticker exists
+        if quote is None:
+            return apology("Please input in the correct stock ticker.")
+
+        # Calculating the price of the number of stocks the customer would like to purchase
+        purchasing_share =  quote["price"] * int(request.form.get("shares"))
+
+        # No broke-ass
+        if cash_balance[0]["cash_balance"] < purchasing_share:
+            return apology("Yo, broke-ass. You can't afford it. Decrease the amount of shares you want to buy.", 400)
+        # In the event that the sales go thru
+        else:
+            # Subtract the amount of cash you have left from the balance and append the newly purchased shares to the db
+            db.execute("UPDATE users SET cash = :cash_balance - :purchasing_share WHERE username = :user_id", cash_balance = cash_balance[0]["cash_balance"], purchasing_share = purchasing_share, user_id = session[user_id])
+
+            # Updating the transactions onto the table
+            db.execute("INSERT INTO transaction_history(user_id, stock_name, stock_symbol, action, brought_shares, price VALUES(:user, :stock_name, :stock_symbol, :action, :brought_shares, :price)",
+            user_id=session["username"], stock_name = quote["name"], stock_symbol = quote["symbol"], action = "Purchased", brought_shares = int(request.form.get("shares")), price = purchasing_share)
+
+            # Send the customer back to his/her portfolio
+            return redirect("/")
+    else:
+        return render_template("buy.html")
 
 
 @app.route("/history")
