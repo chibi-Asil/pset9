@@ -45,3 +45,10 @@ main img
     /* Constrain images on small screens */
     max-width: 100%;
 }
+
+#t01 {
+    width: 100%;
+    background-color: #D3D0C6;
+    border-spacing: 5px;
+    text-align: center;
+}
