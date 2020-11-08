@@ -50,8 +50,38 @@ if not os.environ.get("API_KEY"):
 @login_required
 def index():
     """Show portfolio of stocks"""
-    return apology("TODO")
+    # Will need to display an HTML table summarising, for the user currently logged in, which stocks the user owns, the number of shares owend, the current price of each stock and the total value of each holding (i.e. shares time price). Also display the user's current cash balance along with the grand total
+    # Odds are you’ll want to execute multiple SELECTs. Depending on how you implement your table(s), you might find GROUP BY HAVING SUM and/or WHERE of interest.
+    # Odds are you’ll want to execute multiple SELECTs. Depending on how you implement your table(s), you might find GROUP BY HAVING SUM and/or WHERE of interest.
 
+    # Need to connect to the db
+    with sqlite3.connect("finance.db") as connection:
+        # User balance
+        user_connection_db = users_db(connection)
+        user_connection.db.set_id(session["user_id"])
+
+        # Getting the user's balance
+        user_balance = int(user_connection.get_balance()[0])
+
+        # Amount of shares the user owns - need to set it at 0 so that it can turn into a counter
+        amount_shares = 0
+
+        # Portfolio Holdings
+        portfolio_holding = portfolio_db(session["user_id"], connection)
+
+        for portfolio in portfolio_holding:
+            portfolio["price"] = lookup(portfolio["symbol"]["price"])
+            portfolio["total"] = portfolio["price"] * int(portfolio["shares"])
+            portfolio["name"] = lookup(portfolio["name"])
+
+            amount_shares += portfolio["total"]
+
+        # Need to create a dictionary for the user
+        user = {}
+        user["balance"] = users_balance
+        user["grand_total"] = users_balance + share_total
+
+    return render_template("index.html", portfolio_holding = portfolio_holding, user = user)
 
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
