@@ -1,0 +1,35 @@
+{% extends "layout.html %}
+
+{% block title %}
+    History Transactions
+{% endblock %}
+
+{% block main %}
+    <form action = "/history" methods = "POST">
+        <!-- Table -->
+        <table id = t01 class = "w3-table-all w3-hoverable">
+            <!-- Table Head -->
+            <thead>
+                <tr>
+                    <th>Type</th>
+                    <th>Stock Ticker</th>
+                    <th>Price per Share</th>
+                    <th>Number of Shares Owned</th>
+                    <th>Date & Time of Purchase</th>
+                </tr>    
+            </thead>
+            <!-- Table Head -->
+            <tbody>
+                {% for transaction in transactions %}
+                <tr>
+                    <td>{{ transaction["type"] }}</td>
+                    <td>{{ transaction["symbol"] }}</td>
+                    <td>{{ transaction["shares"] }}</td>
+                    <td>{{ transaction["date_time"] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>    
+        </table>
+    </form>
+
+{% endblock %}
