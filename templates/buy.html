@@ -5,5 +5,16 @@
 {% endblock %}
 
 {% block main %}
-
+    <form action = "/buy" method = "POST">
+        <div class = "form group">
+            <input autocomplete = "off" autofocus class = "form-control" name = "symbol" placeholder = "Symbol" value = "text"/>
+        </div>
+        <div class = "form group">
+            <input autocomplete = "off" autofocus class = "form-control" name = "shares" placeholder = "Number of Shares" value = "numeric"/>
+        </div>
+        <div class = "form group">
+            <input autocomplete = "off" autofocus class = "form" name = "price" placeholder = "Price per Share" value = "numeric"/>
+        </div>
+            <button class = "btn btn-primary" type = "submit">Submit Order</button>
+    </form>
 {% endblock %}
