@@ -1,25 +1,29 @@
- ` {% extends "layout.html" %}
+{% extends "layout.html" %}
+
+{% block title %}
+    Register for a New Account
+{% endblock %}
 
 {% block main %}
     <h1>Register</h1>
     <form action = "/register" method = "post">
         <div class = "form-group">
             <input autocomplete = "off" autofocus name = "username" placeholder = "Username" type = "text">
+            <input autocomplete = "off" autofocus name = "username" placeholder = "Re-Enter Your User Name" type = "text"/>
+        </div>
+        <div>
+            <input autocomplete = "off" autofocus name = "email" placeholder = "Email" />
+            <input autocomplete = "off" autofocus name = "email" placeholder = "Re-Enter Your email" />
+        </div>
             <!-- The assignment requires that we make some adjustments to ensure that we always prioritise security. 12 characters with a mixture of symbols, numbers and upper and lower case letters should make it harder for hackers -->
-            <input class = "form-control" pattern = "(?=.\d)(?=.[a-z])(?=.*[A-Z]).{8,}" name = "password" placeholder = "Password" type = "password" required>
+        <div class = "form-group">
+            <input class = "form-control" pattern = "(?=.\d)(?=.[a-z])(?=.*[A-Z]).{8,}" name = "password" placeholder = "Password" type = "password">
                 <div class = "invalid feedback">
                     Your password should be at least a minimum of 12 characters - a mixture of symbols, numbers and upper and lower case letters.
-                </div>
-        </div>
-        <div class = "form-group">
             <!-- CS50 checker requires that we include in the confirmation button -->
-            <input class = "form-control" pattern = "(?=.\d)(?=.[a-z])(?=.*[A-Z]).{8,}" name = "confirmation" placeholder = "Confirm Password" type = "password" required>
+            <input class = "form-control" pattern = "(?=.\d)(?=.[a-z])(?=.*[A-Z]).{8,}" name = "confirmation" placeholder = "Confirmation of Password" type = "password">
         </div>
         <button class = "btn btn-primary" type = "submit">Register Here</button>
     </form>
-    <script>
-
-    </script>
-
 
 {% endblock %}
