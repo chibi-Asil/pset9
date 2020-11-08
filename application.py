@@ -56,32 +56,27 @@ def index():
 
     # Need to connect to the db
     with sqlite3.connect("finance.db") as connection:
-        # User balance
-        user_connection_db = users_db(connection)
-        user_connection.db.set_id(session["user_id"])
 
-        # Getting the user's balance
-        user_balance = int(user_connection.get_balance()[0])
+        # Setting up variable and pulling up from the database
+        portfolio_holdings = db.execute("SELECT * FROM users WHERE username = :username ORDER BY symbol ASC", user_id = session["user_id"])
+        user = db.execute("SELECT * FROM users WHERE id = :id", id = session["user_id"])
 
         # Amount of shares the user owns - need to set it at 0 so that it can turn into a counter
         amount_shares = 0
 
-        # Portfolio Holdings
-        portfolio_holding = portfolio_db(session["user_id"], connection)
+        for i in range(len(portfolio_holdings)):
+            stock = lookup(portfolio_holdings[i]["symbol"])
+            portfolio_holdings[i]["co_name"] = stock["name"]
+            portfolio_holdings[i]["current_price"] = "%.2f"%(stock["price"])
+            portfolio_holdings[i]["current_total"] = "%.2f"%(stock["price"]) * float(portfolio_holdings[i]["shares_held"])
+            portfolio_holdings[i]["profit"] = "%.2f"%(portfolio_holdings[i]["current_total"]) - float(portfolio_holdings[i]["total"])
+            cash_bal += portfolio_holdings[i]["total"]
+            portfolio_holdings[i]["total"] = "%.2f"%(portfolio_holdings[i]["total"])
 
-        for portfolio in portfolio_holding:
-            portfolio["price"] = lookup(portfolio["symbol"]["price"])
-            portfolio["total"] = portfolio["price"] * int(portfolio["shares"])
-            portfolio["name"] = lookup(portfolio["name"])
+        cash_bal += float(user[0]["cash"])
 
-            amount_shares += portfolio["total"]
+    return render_template("index.html", portfolio_holdingsg = portfolio_holdings, cash = usd(user[0]["cash"], cash_bal = usd(cash_bal)))
 
-        # Need to create a dictionary for the user
-        user = {}
-        user["balance"] = users_balance
-        user["grand_total"] = users_balance + share_total
-
-    return render_template("index.html", portfolio_holding = portfolio_holding, user = user)
 
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
@@ -93,6 +88,8 @@ def buy():
         symbol = request.form.get("symbol")
         shares = request.form.get("shares")
         price = request.form.get("price")
+        name = request.form.get("name")
+        user_id = session["user_id"]
 
         # Need to ensure that the customer can not buy a non-integer of a share nor a negative number
         if not request.form.get("shares").isdigit():
@@ -136,9 +133,11 @@ def history():
 
     # Need to connect to the database
     with sqlite3.connect("finance.db") as connection:
-        transaction_db = transactions_db(str(session['user_id']), connection)
-        # Pull up the transactions on the transaction database
-        transactions = transaction_db.get_history()
+        # Pull up the records for the transactions
+        transactions = db.execute("SELECT * FROM transaction_history WHERE username = :username ORDER BY date DESC", username = session["user_id"])
+        # Calculating the total transactions
+        for row in range(len(transactions)):
+            transactions[i]["total_shares"] = "%.2f"%(float(transactions[i]["amount"]) * float(transactions[i]["price"]))
     return render_template("history.html", transactions = transactions)
 
 
@@ -154,18 +153,18 @@ def login():
 
         # Ensure username was submitted
         if not request.form.get("username"):
-            return apology("must provide username", 403)
+            return apology("must provide username", 200)
 
         # Ensure password was submitted
         elif not request.form.get("password"):
-            return apology("must provide password", 403)
+            return apology("must provide password", 200)
 
         # Query database for username
         rows = db.execute("SELECT * FROM users WHERE username = ?", request.form.get("username"))
 
         # Ensure username exists and password is correct
         if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
-            return apology("invalid username and/or password", 403)
+            return apology("invalid username and/or password", 200)
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
@@ -201,7 +200,7 @@ def quote():
         if not request.form.get("symbol"):
             return apology("Please input in the stock symbol")
         else:
-            return redirect("/quoted.html", stock = stock)
+            return redirect("/quoted.html", symbol=symbol)
     return render_template("/quote.html")
 
 
@@ -212,28 +211,27 @@ def register():
     # Validate submission
     if request.method == "POST":
         # Ask for the username
+        username = request.form.get("username")
         if not request.form.get("username"):
             return apology("Please input in your username, puta", 403)
         # Please submit the password
-        elif not request.form.get("password"):
+        password = request.form.get("password")
+        if not request.form.get("password"):
             return apology("Please input in your password", 403)
         # Check50 requires you to include a confirm your password section
-        elif not request.form.get("password") != request.form.get("confirmation"):
-            return apology("Are you sure you aren't trying to steal someone's funds? Please input the correct password. Remember, we are always watching.", 403)
-
-    ## Creation of variables
-        username = request.form.get("username")
-        password = request.form.get("password")
         confirmation = request.form.get("confirmation")
+        if not request.form.get("password") != request.form.get("confirmation"):
+            return apology("Are you sure you aren't trying to steal someone's funds? Please input the correct password. Remember, we are always watching.", 403)
 
     # Ensuring that the username is unique
         unique = db.execute("SELECT username FROM users WHERE username = :username", username = username.request.form.get("username"))
 
         if len(unique) != 0:
-            return render_template("login.html", error = "Sorry but thec username already exists! Please enter in a new one")
+            return render_template("login.html", error="Sorry but thec username already exists! Please enter in a new one.")
         else:
             encrypted = check_password_hash.encrypt(request.form.get("password"))
-            rows = db.execute("INSERT INTO users (username, password) VALUES(:username, :password)", username = username.form.get("username"), password = encrypted)
+            rows = db.execute("INSERT INTO users (username, password) VALUES(:username, :password)",
+            username=username.form.get("username"), password=encrypted)
 
     # Remembering session
         #rows = db.execute("SELECT * FROM users WHERE username = :username", username = request.form.get("username"))
@@ -244,6 +242,7 @@ def register():
         return redirect("/")
     else:
         return render_template("login.html")
+
 
 @app.route("/sell", methods=["GET", "POST"])
 @login_required
