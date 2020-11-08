@@ -130,7 +130,16 @@ def buy():
 @login_required
 def history():
     """Show history of transactions"""
-    return apology("TODO")
+    # Complete the implementation of history in such a way that it displays an HTML table summarizing all of a user’s transactions ever, listing row by row each and every buy and every sell.
+    # For each row, make clear whether a stock was bought or sold and include the stock’s symbol, the (purchase or sale) price, the number of shares bought or sold, and the date and time at which the transaction occurred.
+    # You might need to alter the table you created for buy or supplement it with an additional table. Try to minimize redundancies.
+
+    # Need to connect to the database
+    with sqlite3.connect("finance.db") as connection:
+        transaction_db = transactions_db(str(session['user_id']), connection)
+        # Pull up the transactions on the transaction database
+        transactions = transaction_db.get_history()
+    return render_template("history.html", transactions = transactions)
 
 
 @app.route("/login", methods=["GET", "POST"])
