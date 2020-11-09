@@ -212,36 +212,56 @@ def register():
     if request.method == "POST":
         # Ask for the username
         username = request.form.get("username")
-        if not request.form.get("username"):
-            return apology("Please input in your username, puta", 403)
+        if not username:
+            return apology("Please input in your username, puta.", 403)
+
+        # # CHECK: Username and re-entered username match
+        # re_enter_username = request.form.get("re_enter_username")
+        # if username != re_enter_username:
+        #     return apology("Usernames do not match.", 403)
+
+        # CHECK: Email entered
+        # email = request.form.get("email")
+        # if not email:
+        #     return apology("No email entered", 403)
+
+        # CHECK: Email entered
+        # re_enter_email = request.form.get("re_enter_email")
+        # if username != re_enter_email:
+        #     return apology("Emails do not match.", 403)
+
         # Please submit the password
-        password = request.form.get("password")
-        if not request.form.get("password"):
-            return apology("Please input in your password", 403)
+        # password = request.form.get("password")
+        # if not password:
+        #     return apology("Please input in your password.", 403)
+        
+        # CHECK: If new user check the password and 2nd confirmation password match before saving
+        # confirmation = request.form.get("confirmation")
+        # if password != confirmation:
+        #     return apology("Passwords do not match.", 403)
+
         # Check50 requires you to include a confirm your password section
-        confirmation = request.form.get("confirmation")
-        if not request.form.get("password") != request.form.get("confirmation"):
-            return apology("Are you sure you aren't trying to steal someone's funds? Please input the correct password. Remember, we are always watching.", 403)
+        # CHECK: Check if user name already exists
+        # Ensuring that the username is unique
+        # unique = db.execute("SELECT username FROM users WHERE username = ?", username)
+        # if len(unique) >= 1:
+            # return render_template("login.html", error="Sorry but the username already exists! Please enter in a new one.")
+        # else:
+            # encrypted = check_password_hash.encrypt(request.form.get("password"))
+            # rows = db.execute("INSERT INTO users (username, password) VALUES(:username, :password)",
+            # username=username.form.get("username"), password=encrypted)
 
-    # Ensuring that the username is unique
-        unique = db.execute("SELECT username FROM users WHERE username = :username", username = username.request.form.get("username"))
+        # Remembering session
+        rows               = db.execute("SELECT * FROM users WHERE username = ?", username)
+        # session["user_id"] = rows[0]["id"]
 
-        if len(unique) != 0:
-            return render_template("login.html", error="Sorry but thec username already exists! Please enter in a new one.")
-        else:
-            encrypted = check_password_hash.encrypt(request.form.get("password"))
-            rows = db.execute("INSERT INTO users (username, password) VALUES(:username, :password)",
-            username=username.form.get("username"), password=encrypted)
-
-    # Remembering session
-        #rows = db.execute("SELECT * FROM users WHERE username = :username", username = request.form.get("username"))
-            session["user_id"] = rows[0]["id"]
-    # Confirmation that the user has registered
+        # Confirmation that the user has registered
         flash("Congrats on joining C$50 Finance. Please do not go bankrupt playing with stocks.")
-    # Redirect to home page
-        return redirect("/")
+
+        # Redirect to home page
+        return redirect("/index.html", 200)
     else:
-        return render_template("login.html")
+        return render_template("register.html")
 
 
 @app.route("/sell", methods=["GET", "POST"])
