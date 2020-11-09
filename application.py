@@ -56,28 +56,31 @@ def index():
     # Odds are you’ll want to execute multiple SELECTs. Depending on how you implement your table(s), you might find GROUP BY HAVING SUM and/or WHERE of interest.
 
     # Need to connect to the db
-    with sqlite3.connect("finance.db") as connection:
+    # with db.connect("finance.db") as connection:
 
-        # Setting up variable and pulling up from the database
-        portfolio_holdings = db.execute("SELECT * FROM users WHERE username = :username ORDER BY symbol ASC", user_id = session["user_id"])
-        user = db.execute("SELECT * FROM users WHERE id = :id", id = session["user_id"])
+    # LOAD: Initialize
+    id = session["user_id"]
 
-        # Amount of shares the user owns - need to set it at 0 so that it can turn into a counter
-        amount_shares = 0
+    # Setting up variable and pulling up from the database
+    portfolio_holdings = db.execute("SELECT * FROM users WHERE username = ? ORDER BY symbol ASC", id)
+    user               = db.execute("SELECT * FROM users WHERE id = ?", id)
 
-        for i in range(len(portfolio_holdings)):
-            stock = lookup(portfolio_holdings[i]["symbol"])
-            portfolio_holdings[i]["co_name"] = stock["name"]
-            portfolio_holdings[i]["current_price"] = "%.2f"%(stock["price"])
-            portfolio_holdings[i]["current_total"] = "%.2f"%(stock["price"]) * float(portfolio_holdings[i]["shares_held"])
-            portfolio_holdings[i]["profit"] = "%.2f"%(portfolio_holdings[i]["current_total"]) - float(portfolio_holdings[i]["total"])
-            cash_bal += portfolio_holdings[i]["total"]
-            portfolio_holdings[i]["total"] = "%.2f"%(portfolio_holdings[i]["total"])
+    # TODO fix
+    # Amount of shares the user owns - need to set it at 0 so that it can turn into a counter
+    # amount_shares = 0
+    # cash_bal      = 0
+    # for i in range(len(portfolio_holdings)):
+    #     stock                                  = lookup(portfolio_holdings[i]["symbol"])
+    #     portfolio_holdings[i]["co_name"]       = stock["name"]
+    #     portfolio_holdings[i]["current_price"] = "%.2f"%(stock["price"])
+    #     portfolio_holdings[i]["current_total"] = "%.2f"%(stock["price"]) * float(portfolio_holdings[i]["shares_held"])
+    #     portfolio_holdings[i]["profit"]        = "%.2f"%(portfolio_holdings[i]["current_total"]) - float(portfolio_holdings[i]["total"])
+    #     cash_bal                               += portfolio_holdings[i]["total"]
+    #     portfolio_holdings[i]["total"]         = "%.2f"%(portfolio_holdings[i]["total"])
 
-        cash_bal += float(user[0]["cash"])
-
-    return render_template("index.html", portfolio_holdingsg = portfolio_holdings, cash = usd(user[0]["cash"], cash_bal = usd(cash_bal)))
-
+    # cash_bal += float(user[0]["cash"])
+    # return render_template("index.html", portfolio_holdingsg = portfolio_holdings, cash = usd(user[0]["cash"], cash_bal = usd(cash_bal)))
+    return render_template("index.html")
 
 @app.route("/buy", methods=["GET", "POST"])
 @login_required
@@ -151,21 +154,24 @@ def login():
 
     # User reached route via POST (as by submitting a form via POST)
     if request.method == "POST":
+        # LOAD: Initialize
+        username = request.form.get("username")
+        password = request.form.get("password")
 
         # Ensure username was submitted
-        if not request.form.get("username"):
-            return apology("must provide username", 200)
+        if not username:
+            return apology("must provide username", 403)
 
         # Ensure password was submitted
-        elif not request.form.get("password"):
-            return apology("must provide password", 200)
+        elif not password:
+            return apology("must provide password", 403)
 
         # Query database for username
-        rows = db.execute("SELECT * FROM users WHERE username = ?", request.form.get("username"))
+        rows = db.execute("SELECT * FROM users WHERE username = ?", username)
 
         # Ensure username exists and password is correct
-        if len(rows) != 1 or not check_password_hash(rows[0]["hash"], request.form.get("password")):
-            return apology("invalid username and/or password", 200)
+        if len(rows) != 1 or not check_password_hash(rows[0]["hash"], password):
+            return apology("Invalid username and/or password.", 403)
 
         # Remember which user has logged in
         session["user_id"] = rows[0]["id"]
@@ -260,7 +266,7 @@ def register():
         session["user_id"] = rows[0]["id"]
 
         # Confirmation that the user has registered
-        # TODO this message should be on index.html flash("Congrats on joining C$50 Finance. Please do not go bankrupt playing with stocks.")
+        # TODO this message should be on inext page flash("Congrats on joining C$50 Finance. Please do not go bankrupt playing with stocks.")
 
         # Redirect to home page
         return redirect(url_for(index), 200)
