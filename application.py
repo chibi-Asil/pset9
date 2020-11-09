@@ -218,6 +218,7 @@ def register():
             return apology("Please input in a username, puta", 403)
         # Email confirmmation
         email = request.form.get("email"):
+        if not email:
             return apology("Please input in your email", 403)
         # Confirmation of email
         re_enter_email = request.form.get("re_enter_email")
