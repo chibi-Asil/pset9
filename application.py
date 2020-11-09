@@ -239,7 +239,7 @@ def register():
         if len(unique) >= 1:
             return render_template("login.html", error="Sorry but thec username already exists! Please enter in a new one.")
         else:
-            has = generate_password_hash(password)
+            hash = generate_password_hash(password)
             rows = db.execute("INSERT INTO users (username, password) VALUES(?, ?)",
             (username, hash))
 
