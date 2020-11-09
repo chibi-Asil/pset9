@@ -195,13 +195,16 @@ def quote():
     # Require that a user input a stock's symbol, implemented as a text field whose name is symbol
     # Submit the user's input via POST to /quote
     if request.method == "POST":
+        if not request.form.get("symbol"):
+            return redirect(url_for(quote))
         # Stock is a dictionary where the keys are "name", "price", and "symbol"
         stock = lookup(request.form.get("symbol"))
-        if not request.form.get("symbol"):
-            return apology("Please input in the stock symbol")
-        else:
-            return redirect("/quoted.html", symbol=symbol)
-    return render_template("/quote.html")
+        if not stock:
+            return apology("Sorry but the stock symbol you input in is incorrect. Try again")
+        return render_template("quoted.html", name = stock["name"] symbol = stock["symbol"], price = stock["price"])
+    # Need to redirect in the event that they arrive via link. They will still need to input in the stock quote 
+    else: 
+        return redirect(url_for(quote))
 
 
 @app.route("/register", methods=["GET", "POST"])
