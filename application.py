@@ -211,18 +211,18 @@ def register():
     # Validate submission
     # Require that a user input in a username, implemented as a text field whose name is username./ Render an apology if the user's input is blank or the username already exists
     # Validate submission
-    if request.method == "POST":
+        if request.method == "POST":
         # Ask for the username
         username = request.form.get("username")
         if not username:
             return apology("Please input in a username, puta", 403)
         # Email confirmmation
-        email = request.form.get("email"):
+        email = request.form.get("email")
         if not email:
             return apology("Please input in your email", 403)
         # Confirmation of email
         re_enter_email = request.form.get("re_enter_email")
-        if not re_enter_email:
+        if email != re_enter_email:
             return apology("Mis-matching email", 403)
         # Please submit the password
         password = request.form.get("password")
@@ -236,20 +236,19 @@ def register():
     # Ensuring that the username is unique
         unique = db.execute("SELECT username FROM users WHERE username = ?", username)
 
-        if len(unique) != 0:
+        if len(unique) >= 1:
             return render_template("login.html", error="Sorry but thec username already exists! Please enter in a new one.")
         else:
-            encrypted = check_password_hash.encrypt(request.form.get("password"))
-            rows = db.execute("INSERT INTO users (username, password) VALUES(:username, :password)",
-            username=username.form.get("username"), password=encrypted)
+            has = generate_password_hash(password)
+            rows = db.execute("INSERT INTO users (username, password) VALUES(?, ?)",
+            (username, hash))
 
     # Remembering session
         rows = db.execute("SELECT * FROM users WHERE username = ?", username)
-            # session["user_id"] = rows[0]["id"]
-    # Confirmation that the user has registered
-        flash("Congrats on joining C$50 Finance. Please do not go bankrupt playing with stocks.")
+        session["user_id"] = rows[0]["id"]
+
     # Redirect to home page
-        return redirect("/index.html, 200")
+        return redirect(url_for(index), 200)
     else:
         return render_template("register.html")
 
