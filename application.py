@@ -5,7 +5,7 @@ import re
 
 
 from cs50 import SQL
-from flask import Flask, flash, redirect, render_template, request, session
+from flask import Flask, flash, redirect, render_template, request, session, url_for
 from flask_session import Session
 from tempfile import mkdtemp
 from werkzeug.exceptions import default_exceptions, HTTPException, InternalServerError
@@ -15,6 +15,7 @@ from helpers import apology, login_required, lookup, usd
 
 # Configure application
 app = Flask(__name__)
+app.secret_key = "abc" 
 
 # Ensure templates are auto-reloaded
 app.config["TEMPLATES_AUTO_RELOAD"] = True
@@ -215,51 +216,54 @@ def register():
         if not username:
             return apology("Please input in your username, puta.", 403)
 
-        # # CHECK: Username and re-entered username match
-        # re_enter_username = request.form.get("re_enter_username")
-        # if username != re_enter_username:
-        #     return apology("Usernames do not match.", 403)
+        # CHECK: Username and re-entered username match
+        re_enter_username = request.form.get("re_enter_username")
+        if username != re_enter_username:
+            return apology("Usernames do not match.", 403)
 
         # CHECK: Email entered
-        # email = request.form.get("email")
-        # if not email:
-        #     return apology("No email entered", 403)
+        email = request.form.get("email")
+        if not email:
+            return apology("No email entered", 403)
 
         # CHECK: Email entered
-        # re_enter_email = request.form.get("re_enter_email")
-        # if username != re_enter_email:
-        #     return apology("Emails do not match.", 403)
+        re_enter_email = request.form.get("re_enter_email")
+        if username != re_enter_email:
+            return apology("Emails do not match.", 403)
 
         # Please submit the password
-        # password = request.form.get("password")
-        # if not password:
-        #     return apology("Please input in your password.", 403)
+        password = request.form.get("password")
+        if not password:
+            return apology("Please input in your password.", 403)
         
         # CHECK: If new user check the password and 2nd confirmation password match before saving
-        # confirmation = request.form.get("confirmation")
-        # if password != confirmation:
-        #     return apology("Passwords do not match.", 403)
+        confirmation = request.form.get("confirmation")
+        if password != confirmation:
+            return apology("Passwords do not match.", 403)
 
         # Check50 requires you to include a confirm your password section
         # CHECK: Check if user name already exists
         # Ensuring that the username is unique
-        # unique = db.execute("SELECT username FROM users WHERE username = ?", username)
-        # if len(unique) >= 1:
-            # return render_template("login.html", error="Sorry but the username already exists! Please enter in a new one.")
-        # else:
-            # encrypted = check_password_hash.encrypt(request.form.get("password"))
-            # rows = db.execute("INSERT INTO users (username, password) VALUES(:username, :password)",
-            # username=username.form.get("username"), password=encrypted)
+        unique = db.execute("SELECT username FROM users WHERE username = ?", username)
+        if len(unique) >= 1:
+            return render_template("login.html", error="Sorry but the username already exists! Please enter in a new one.")
+        else:
+            # CALCULATE: Encrypt password
+            hash = generate_password_hash(password)
+            # hash = check_password_hash.encrypt(password)
+
+            # ACTION: Insert new username and encrypted password into database
+            rows = db.execute("INSERT INTO users (username, hash) VALUES(?, ?)", (username, hash))
 
         # Remembering session
         rows               = db.execute("SELECT * FROM users WHERE username = ?", username)
-        # session["user_id"] = rows[0]["id"]
+        session["user_id"] = rows[0]["id"]
 
         # Confirmation that the user has registered
-        flash("Congrats on joining C$50 Finance. Please do not go bankrupt playing with stocks.")
+        # TODO this message should be on index.html flash("Congrats on joining C$50 Finance. Please do not go bankrupt playing with stocks.")
 
         # Redirect to home page
-        return redirect("/index.html", 200)
+        return redirect(url_for(index), 200)
     else:
         return render_template("register.html")
 
