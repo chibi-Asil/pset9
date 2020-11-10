@@ -4,3 +4,5 @@ CREATE TABLE users (id INTEGER, username TEXT NOT NULL, hash TEXT NOT NULL, cash
 -- Will need to create a transaction table that will host both buy and sell
 CREATE TABLE transactions(id INTEGER, username TEXT NOT NULL, name TEXT NOT NULL, symbol TEXT NOT NULL, shares NUMERIC NOT NULL, process TEXT NOT NULL, price_per_share NUMERIC NOT NULL, total NUMERIC NOT NULL, amount NUMERIC NOT NULL);
 
+-- As you include in the buy and sell page, you need to include new things to the transactions table
+ALTER TABLE transactions ADD shares_purchased NUMERIC and shares_sold NUMERIC;
