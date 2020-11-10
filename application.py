@@ -82,8 +82,8 @@ def index():
 @login_required
 def buy():
     """Buy shares of stock"""
-    # Require that a user input a stock’s symbol, implemented as a text field whose name is symbol. Render an apology if the input is blank or the symbol does not exist (as per the return value of lookup).
-        if request.method == "POST":
+# Require that a user input a stock’s symbol, implemented as a text field whose name is symbol. Render an apology if the input is blank or the symbol does not exist (as per the return value of lookup).
+    if request.method == "POST":
     # Need to define symbol and price
     # Stock symbol
         symbol = request.form.get("symbol")
@@ -132,10 +132,11 @@ def buy():
 
             # Otherwise create a new entry
         else:
-            db.execute("INSERT INTO transactions (user_id, symbol, shares, total, price_per_share) VALUES (?, ?, ?, ?, ?)", username = user_id, symbol, shares, price_per_share=price_per_share)
+            db.execute("INSERT INTO transactions (user_id, action, symbol, shares,  total, price_per_share) VALUES (?, ?, ?, ?, ?, ?)", username=user_id, action=1, symbol=symbol, shares=shares, total=total, price_per_share=stock["price"])
             return render_template(url_for("history"))
     else:
         return render_template("buy.html")
+    
 
 @app.route("/history")
 @login_required
