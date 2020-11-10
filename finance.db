@@ -6,3 +6,6 @@ CREATE TABLE transactions(id INTEGER, username TEXT NOT NULL, name TEXT NOT NULL
 
 -- As you include in the buy and sell page, you need to include new things to the transactions table
 ALTER TABLE transactions ADD shares_purchased NUMERIC and shares_sold NUMERIC;
+
+-- Need to rename some of the transactions table so it wil be easier for people to use
+ALTER TABLE transactions ADD shares_owned NUMERIC;
