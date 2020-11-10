@@ -1,0 +1,2 @@
+# Will need to create a transaction table
+CREATE TABLE transactions(id INTEGER, username TEXT NOT NULL, name TEXT NOT NULL, symbol TEXT NOT NULL, shares NUMERIC NOT NULL, price_per_share NUMERIC NOT NULL, total NUMERIC NOT NULL, amount NUMERIC NOT NULL);
