@@ -214,44 +214,47 @@ def register():
     # Validate submission
     # Require that a user input in a username, implemented as a text field whose name is username./ Render an apology if the user's input is blank or the username already exists
     # Validate submission
-        if request.method == "POST":
+            if request.method == "POST":
         # Ask for the username
         username = request.form.get("username")
         if not username:
-            return apology("Please input in a username, puta", 403)
+            return apology("Please input in a username, puta")
+        # Confirm username matches
+        re_enter_username = request.form.get("re_enter_username")
+        if username != re_enter_username:
+            return apology("Please make sure the username matches one another")
         # Email confirmmation
         email = request.form.get("email")
         if not email:
-            return apology("Please input in your email", 403)
+            return apology("Please input in your email")
         # Confirmation of email
         re_enter_email = request.form.get("re_enter_email")
         if email != re_enter_email:
-            return apology("Mis-matching email", 403)
+            return apology("Mis-matching email")
         # Please submit the password
         password = request.form.get("password")
         if not password:
-            return apology("Please input in a password", 403)
+            return apology("Please input in a password")
         # Check50 requires you to include a confirm your password section
         confirmation = request.form.get("confirmation")
         if password != confirmation:
-            return apology("Are you sure you aren't trying to steal someone's funds? Please input the correct password. Remember, we are always watching.", 403)
+            return apology("Please make sure the passwords match one another.")
 
     # Ensuring that the username is unique
-        unique = db.execute("SELECT username FROM users WHERE username = ?", username)
+        unique = db.execute("SELECT * FROM users WHERE username = ?, email = ?", username, email)
 
         if len(unique) >= 1:
-            return render_template("login.html", error="Sorry but thec username already exists! Please enter in a new one.")
+            return render_template("login.html", error="Sorry but the username already exists! Please enter in a new one.")
         else:
             hash = generate_password_hash(password)
-            rows = db.execute("INSERT INTO users (username, password) VALUES(?, ?)",
-            (username, hash))
+            rows = db.execute("INSERT INTO users (username, password, email) VALUES(?, ?, ?)", (username, hash, email))
 
     # Remembering session
         rows = db.execute("SELECT * FROM users WHERE username = ?", username)
         session["user_id"] = rows[0]["id"]
 
     # Redirect to home page
-        return redirect(url_for(index), 200)
+        return redirect(url_for("index"))
     else:
         return render_template("register.html")
 
