@@ -195,8 +195,8 @@ def quote():
     # Require that a user input a stock's symbol, implemented as a text field whose name is symbol
     # Submit the user's input via POST to /quote
     if request.method == "POST":
-        if not request.form.get("symbol"):
-            return redirect(url_for(quote))
+        symbol = request.form.get("symbol")
+        if not symbol:
         # Stock is a dictionary where the keys are "name", "price", and "symbol"
         stock = lookup(request.form.get("symbol"))
         if not stock:
