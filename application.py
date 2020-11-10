@@ -280,54 +280,49 @@ def sell():
     # Complete the implementation of sell in such a way that it enables a user to sell shares of a stock (that he or she owns).
     # Require that a user input a stock’s symbol, implemented as a select menu whose name is symbol. Render an apology if the user fails to select a stock or if (somehow, once submitted) the user does not own any shares of that stock.
     # Require that a user input a number of shares, implemented as a text field whose name is shares. Render an apology if the input is not a positive integer or if the user does not own that many shares of the stock.
-    if request.method == "POST":
+        if request.method == "POST":
         # Need to connect with the database so that we know what is available to be sold
         with sqlite3.connect("finance.db") as connection:
             user_id = session["user_id"]
             symbol = request.form.get("symbol")
             shares_to_sell = int(request.form.get("shares"))
 
-            # Portfolio holdings
-            user_connection_db = portfolio_db(user_id, connection)
-            portfolio_holdings = user_connection_db.get_holdings()
+            # Need to do a SQL query to figure out how many stocks are in the user's holding
+            holdings_stock = db.execute("SELECT * FROM transactions WHERE user_id = :username", username = session["user_id"])
 
-            # If the user wishes to be troll and input in a fraction or doesn't own any of that stock
-            if shares_to_sell <= 0:
-                return apology("Are you an idiot? Why are you trying to sell a share in which the share is 0?")
-            if user_connection_db.number_of_shares_owned(symbol) == None:
-                return apology("Are you an idiot? Why are you trying to sell a share when you don't own that share?")
-            # If the user does not have enough shares to sell
+            # Need to ensure that the quantity is submitted
+            if not request.form.get("shares_to_sell") or int(request.form.get("shares_to_sell")) < 1:
+                return render_template("sell.html", holdings_stock=holding_stock)
 
-            current_amount_of_shares_owned = int(user_connection_db.get_number_of_shares(symbol)[0])
+            # Retrieving stocks
+            shares_owned = db.execute("SELECT total FROM transactions WHERE user_id = :user_id AND symbol = :symbol",
+                user_id=user_id, symbol=symbol)
 
-            if current_amount_of_shares_owned < shares_to_sell:
-                return apology("Please decrease the amount of shares you wish to sell. You aren't going to steal money from us")
+            if shares_owned:
+                shares_owned = shares_owned[0]
+            else:
+                return render_template("sell.html", holding_stock)
+            # Retrieving user's information
+            if int(shares_to_sell) > holding_stock["shares"]:
+                return apology(f"You do not have enough shares to sell. You only have {{ shares }}. Please decrease the {{ shares_to_sell }} to the appropriate amount in which you want to sell.")
 
-            # In the event that the user has enough to sell - you'll need the current price
-            current_share_price = lookup(symbol)["price"]
+            # Need to look up the amount of shares that need to be sold
+            current_price = lookup(symbol)
 
-            # Getting the user's current USD balance
-            cash_db = users_db(connection)
-            cash_db.set_id(session["user_id"])
-            current_used_balance = cash_db.get_balance()[0]
+            # Calculating total_price
+            total_price = float(stock["price"]) * float(shares_to_sell)
 
-            # New balance
-            new_balance = current_usd_balance + (current_share_price * shares_to_sell)
-
-            # Updating balance
-            cash_db(new_balance)
-
-            # Need to remember to subtract from the shares
-            user_connect_db.update_shares((current_amount_of_shares_owned - shares_to_sell), symbol)
-
-            # Updating transaction history
-            transaction_db = transactions_db(user_id, connection)
-            transaction_db.insert(("sold", symbol, share_price, str(shares_to_sell), get_time()))
+            # Will need to modify how many shares the user will own
+            if int(shares_to_sell) == shares_owned["total"]:
+                db.execute("DELETE FROM transactions WHERE user_id=:user_id AND symbol=:symbol", user_id=user_id, symbol=symbol)
+            else: 
+                new_total_shares = int(holdings_stock["total"] - int(shares_to_sell))
+                new_total = float(new_total_shares) * float(holdings_stock["price_per_share"])
+                db.execute("UPDATE transactions SET shares_owned=:new_total_shares, total=:total WHERE user_id = :user_id AND symbol=:symbol" WHERE user_id=user_id, action=0, symbol=symbol, shares_owned=shares_owned, price_per_share = transaction["price_per_share"])
 
         return redirect("/history")
 
     return render_template("sell.html")
-
 
 def errorhandler(e):
     """Handle error"""
