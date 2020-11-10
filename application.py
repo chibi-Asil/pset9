@@ -83,45 +83,59 @@ def index():
 def buy():
     """Buy shares of stock"""
     # Require that a user input a stock’s symbol, implemented as a text field whose name is symbol. Render an apology if the input is blank or the symbol does not exist (as per the return value of lookup).
-    if request.method == "POST":
+        if request.method == "POST":
     # Need to define symbol and price
+    # Stock symbol
         symbol = request.form.get("symbol")
+    # Amount of shares owned
         shares = request.form.get("shares")
+    # Price per share
         price = request.form.get("price")
+    # Company name
         name = request.form.get("name")
         user_id = session["user_id"]
 
-        # Need to ensure that the customer can not buy a non-integer of a share nor a negative number
-        if not request.form.get("shares").isdigit():
-            return apology("Are you trying to troll us? You can't buy a negative stock. You can not buy a fraction of a stock.")
+        # Need to ensure that the symbol and the amount of shares are submitted
+        if not request.form.get("symbol") or not request.form.get("shares") or int(request.form.get("shares")) < 1:
+            return render_template(url_for("buy"))
+        # Need to look up the stock
+        stock = lookup(symbol)
 
-        # So the customer know that s/he is not a broke ass
-        cash_balance = db.execute("SELECT cash FROM users WHERE id = :id", id = session["user_id"])
+        # Need to ensure that the symbol exists
+        if not stock:
+            return apology("Symbol could not be found")
 
-        # Need to ensure that the stock ticker exists
-        if quote is None:
-            return apology("Please input in the correct stock ticker.")
+        # Calculating the total price
+        total_price = float(stock["price"]) * int(shares)
 
-        # Calculating the price of the number of stocks the customer would like to purchase
-        purchasing_share =  quote["price"] * int(request.form.get("shares"))
+        # Inserting them into the database
+        row = db.execute("SELECT * FROM users WHERE username: ?", username = user_id)
+        cash_inhand = float(user[0]["cash"])
 
-        # No broke-ass
-        if cash_balance[0]["cash_balance"] < purchasing_share:
-            return apology("Yo, broke-ass. You can't afford it. Decrease the amount of shares you want to buy.", 400)
-        # In the event that the sales go thru
+        # Checking to see if the user can even afford it
+        if cash_inhand < total_price:
+            return apology("Sorry but you can not afford it. You only have this much: " + str("%.2f"%cash_inhand))
+        # New balance
+        new_balance = total_price - cash_inhand
+
+        # If the stock is already owned, the database will need to be updated
+        # Check
+        transaction_db = db.execute("SELECT * FROM stocks WHERE user_id = ? and symbol = ?", username=user_id, symbol=symbol)
+
+        # Updating with new price and amount if it is already owned
+        if len(transaction_db) == 1:
+            new_amount = int(transaction_db[0]["shares"] + int(shares))
+            new_total = float(transaction_db[0]["total"] + total_price)
+            new_price_per_share = "%.2f"%(new_total / float(new_amount))
+
+            db.execute("UPDATE transactions SET amount=:amount, total=:total, price_per_share=:price_per_share WHERE username=:user_id AND symbol=:symbol, amount=:new_amount, total=:new_total, price_per_share=:new_price_per_share")
+
+            # Otherwise create a new entry
         else:
-            # Subtract the amount of cash you have left from the balance and append the newly purchased shares to the db
-            db.execute("UPDATE users SET cash = :cash_balance - :purchasing_share WHERE username = :user_id", cash_balance = cash_balance[0]["cash_balance"], purchasing_share = purchasing_share, user_id = session[user_id])
-
-            # Updating the transactions onto the table
-            db.execute("INSERT INTO transaction_history(user_id, stock_name, stock_symbol, action, brought_shares, price VALUES(:user, :stock_name, :stock_symbol, :action, :brought_shares, :price)",
-            user_id=session["username"], stock_name = quote["name"], stock_symbol = quote["symbol"], action = "Purchased", brought_shares = int(request.form.get("shares")), price = purchasing_share)
-
-            # Send the customer back to his/her portfolio
-            return redirect("/")
+            db.execute("INSERT INTO transactions (user_id, symbol, shares, total, price_per_share) VALUES (?, ?, ?, ?, ?)", username = user_id, symbol, shares, price_per_share=price_per_share)
+            return render_template(url_for("history"))
     else:
         return render_template("buy.html")
-
 
 @app.route("/history")
 @login_required
