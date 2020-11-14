@@ -225,19 +225,19 @@ def quote():
 @app.route("/register", methods=["GET", "POST"])
 def register():
     """Register user"""
+    # Forget any user_id
+    session.clear()
     # Require that a user input in a username, implemented as a text field whose name is username./ Render an apology if the user's input is blank or the username already exists
     # Validate submission
-    # Require that a user input in a username, implemented as a text field whose name is username./ Render an apology if the user's input is blank or the username already exists
-    # Validate submission
-            if request.method == "POST":
+    if request.method == "POST":
         # Ask for the username
         username = request.form.get("username")
         if not username:
-            return apology("Please input in a username, puta")
+            return apology("Please input in your username, puta.", 400)
         # Confirm username matches
         re_enter_username = request.form.get("re_enter_username")
         if username != re_enter_username:
-            return apology("Please make sure the username matches one another")
+            return apology("Please make sure the username matches one another.")
         # Email confirmmation
         email = request.form.get("email")
         if not email:
@@ -256,20 +256,25 @@ def register():
             return apology("Please make sure the passwords match one another.")
 
     # Ensuring that the username is unique
-        unique = db.execute("SELECT * FROM users WHERE username = ?, email = ?", username, email)
+        unique = db.execute("SELECT username FROM users WHERE username = ?", username)
 
         if len(unique) >= 1:
-            return render_template("login.html", error="Sorry but the username already exists! Please enter in a new one.")
+            return apology("Duplicate username.", 400)
         else:
+            # CALCULATE: Encrypt password
             hash = generate_password_hash(password)
-            rows = db.execute("INSERT INTO users (username, password, email) VALUES(?, ?, ?)", (username, hash, email))
+            rows = db.execute("INSERT INTO users (username, hash, email) VALUES(?, ?, ?)", (username, hash, email))
 
     # Remembering session
         rows = db.execute("SELECT * FROM users WHERE username = ?", username)
         session["user_id"] = rows[0]["id"]
 
-    # Redirect to home page
-        return redirect(url_for("index"))
+    # Confirmation that the user has registered
+        # TODO this message should be on inext page flash("Congrats on joining C$50 Finance. Please do not go bankrupt playing with stocks.")
+
+        # Redirect to home page
+        # return redirect(url_for(index), 200)
+        return redirect("/")
     else:
         return render_template("register.html")
 
