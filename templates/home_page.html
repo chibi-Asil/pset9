@@ -9,3 +9,42 @@
     <div class = "col-md-8"></div>
     {% if not stocks %}
         <h5>You currently do not own any shares. Please go to <a href = "{{ url_for('buy') }}">buy</a> some. </h5>
+        
+        
+        
+        
+        
+        
+        
+        
+        <!--DELETE this whole file not needed since index.html will be used-->
+        <!-- Will need to display an HTML table summarising, for the user currently logged in, which stocks the user owns, the number of shares owend, the current price of each stock and the total value of each holding (i.e. shares time price). Also display the user's current cash balance along with the grand total -->
+    <!--<div class = "jumbtron">-->
+    <!--    <p class = "lead">Cash (USD) Balance: {{ user["balance"] | USD }}</p>-->
+    <!--    <p class = "lead"> Total Amount: {{ user["grand_total"] | USD }}</p>-->
+    <!--</div>-->
+
+    <!-- Need to create a TABLE -->
+    <!--<table id = "t01">-->
+    <!--    <thead>-->
+    <!--        <tr>-->
+    <!--            <th>Stock Ticker</th>-->
+    <!--            <th>Company Name</th>-->
+    <!--            <th>Amount of Shares Owned</th>-->
+    <!--            <th>Price Per Share</th>-->
+    <!--            <th>Total</th>-->
+    <!--        </tr>-->
+    <!--    </thead>-->
+    <!--    <tbody>-->
+    <!--        {% for portfolio in portfolio_holdings %}-->
+    <!--            <tr>-->
+    <!--                <td>{{ portfolio_holding["symbol"] }}</td>-->
+    <!--                <td>{{ portfolio_holding["name"] }}</td>-->
+    <!--                <td>{{ portfolio_holding["shares"] }}</td>-->
+    <!--                <td>{{ portfolio_holding["price"] }}</td>-->
+    <!--                <td>{{ portfolio_holding["total"] }}</td>-->
+    <!--            </tr>-->
+    <!--        {% endfor %}-->
+    <!--    </tbody>-->
+    <!--</table>-->
+

@@ -41,57 +41,6 @@ if not os.environ.get("API_KEY"):
     raise RuntimeError("API_KEY not set")
 # export API_KEY=pk_acc4bc5a4f5b49e9b985d79103291f4e
 
-@app.route("/")
-@login_required
-def index():
-    """Show portfolio of stocks"""
-    # Will need to display an HTML table summarising, for the user currently logged in, which stocks the user owns, the number of shares owend, the current price of each stock and the total value of each holding (i.e. shares time price). Also display the user's current cash balance along with the grand total
-    # Odds are you’ll want to execute multiple SELECTs. Depending on how you implement your table(s), you might find GROUP BY HAVING SUM and/or WHERE of interest.
-    # Odds are you’ll want to execute multiple SELECTs. Depending on how you implement your table(s), you might find GROUP BY HAVING SUM and/or WHERE of interest.
-
-    # ACTION: User currently logged in
-    user     = db.execute("SELECT * FROM users WHERE id = ?", session["user_id"])
-    username = user[0]["username"]
-
-    # ACTION: Which stocks the user owns
-
-    # the number of shares owned
-    # the current price of each stock
-    # the total value of each holding (i.e. shares time price)
-    # Also display the user's current cash balance
-    cash     = user[0]["cash"]
-    # along with the grand total
-
-
-
-
-    # TODO All old code see what to delete
-    # Need to connect to the db
-    # with sqlite3.connect("finance.db") as connection:
-    #     # Setting up variable and pulling up from the database
-    #     portfolio_holdings = db.execute("SELECT * FROM users WHERE username = :username ORDER BY symbol ASC", user_id = session["user_id"])
-    #     user = db.execute("SELECT * FROM users WHERE id = :id", id = session["user_id"])
-
-    #     # Amount of shares the user owns - need to set it at 0 so that it can turn into a counter
-    #     amount_shares = 0
-
-    #     for i in range(len(portfolio_holdings)):
-    #         stock = lookup(portfolio_holdings[i]["symbol"])
-    #         portfolio_holdings[i]["co_name"] = stock["name"]
-    #         portfolio_holdings[i]["current_price"] = "%.2f"%(stock["price"])
-    #         portfolio_holdings[i]["current_total"] = "%.2f"%(stock["price"]) * float(portfolio_holdings[i]["shares_held"])
-    #         portfolio_holdings[i]["profit"] = "%.2f"%(portfolio_holdings[i]["current_total"]) - float(portfolio_holdings[i]["total"])
-    #         cash_bal += portfolio_holdings[i]["total"]
-    #         portfolio_holdings[i]["total"] = "%.2f"%(portfolio_holdings[i]["total"])
-
-    #     cash_bal += float(user[0]["cash"])
-
-    # return render_template("index.html", portfolio_holdingsg = portfolio_holdings, cash = usd(user[0]["cash"], cash_bal = usd(cash_bal)))
-    # return apology("TODO")
-    return render_template("index.html",
-    username = username,
-    cash     = cash)
-
 @app.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
@@ -188,6 +137,80 @@ def register():
     else:
         return render_template("register.html")
 
+@app.route("/")
+@login_required
+def index():
+    """Show portfolio of stocks"""
+    # Will need to display an HTML table summarising, for the user currently logged in, which stocks the user owns, the number of shares owend, the current price of each stock and the total value of each holding (i.e. shares time price). Also display the user's current cash balance along with the grand total
+    # Odds are you’ll want to execute multiple SELECTs. Depending on how you implement your table(s), you might find GROUP BY HAVING SUM and/or WHERE of interest.
+    # Odds are you’ll want to execute multiple SELECTs. Depending on how you implement your table(s), you might find GROUP BY HAVING SUM and/or WHERE of interest.
+
+    # LOAD: User
+    user_id = session["user_id"]
+
+    # ACTION: User currently logged in
+    users    = db.execute("SELECT * FROM users WHERE id = ?", user_id)
+    username = users[0]["username"]
+
+    # ACTION: Which stocks the user owns
+    # orders = db.execute("SELECT * FROM orders WHERE user_id = ?", user_id)
+    # foreach row get the stock_ticker
+    # user_stocks = users[0]["username"]
+
+    # the number of shares owned
+    
+    # the current price of each stock
+    # the total value of each holding (i.e. shares time price)
+    # Also display the user's current cash balance
+    cash     = users[0]["cash"]
+    # along with the grand total
+    # TODO All old code see what to delete
+    # Need to connect to the db
+    # with sqlite3.connect("finance.db") as connection:
+    #     # Setting up variable and pulling up from the database
+    #     portfolio_holdings = db.execute("SELECT * FROM users WHERE username = :username ORDER BY symbol ASC", user_id = session["user_id"])
+    #     user = db.execute("SELECT * FROM users WHERE id = :id", id = session["user_id"])
+
+    #     # Amount of shares the user owns - need to set it at 0 so that it can turn into a counter
+    #     amount_shares = 0
+
+    #     for i in range(len(portfolio_holdings)):
+    #         stock = lookup(portfolio_holdings[i]["symbol"])
+    #         portfolio_holdings[i]["co_name"] = stock["name"]
+    #         portfolio_holdings[i]["current_price"] = "%.2f"%(stock["price"])
+    #         portfolio_holdings[i]["current_total"] = "%.2f"%(stock["price"]) * float(portfolio_holdings[i]["shares_held"])
+    #         portfolio_holdings[i]["profit"] = "%.2f"%(portfolio_holdings[i]["current_total"]) - float(portfolio_holdings[i]["total"])
+    #         cash_bal += portfolio_holdings[i]["total"]
+    #         portfolio_holdings[i]["total"] = "%.2f"%(portfolio_holdings[i]["total"])
+
+    #     cash_bal += float(user[0]["cash"])
+
+    # return render_template("index.html", portfolio_holdingsg = portfolio_holdings, cash = usd(user[0]["cash"], cash_bal = usd(cash_bal)))
+    # return apology("TODO")
+    return render_template("index.html",
+    username = username,
+    cash     = cash)
+
+# @app.route("/quote", methods=["GET", "POST"])
+# @login_required
+# def quote():
+#     """Get stock quote."""
+#     # Require that a user input a stock's symbol, implemented as a text field whose name is symbol
+#     # Submit the user's input via POST to /quote
+#     if request.method == "POST":
+#         # LOAD: User stock symbol input
+#         stock_symbol = lookup(request.form.get("symbol"))
+
+#         # CHECK: User input
+#         if not stock_symbol:
+#             return apology("Please input in the stock symbol.")
+#         else:
+#             # ACTION: Get stock symbol quote using cloud-sse.iexapis.com API
+#             stock_symbol_quote_dict = lookup(stock_symbol)
+
+#             return redirect("/quoted.html", stock_symbol_quote_dict = stock_symbol_quote_dict)
+#     return render_template("/quote.html")
+
 def errorhandler(e):
     """Handle error"""
     if not isinstance(e, HTTPException):
@@ -253,22 +276,6 @@ for code in default_exceptions:
 #         return redirect("/history")
 
 #     return render_template("sell.html")
-
-# TODO fix indentation
-# @app.route("/quote", methods=["GET", "POST"])
-# @login_required
-# def quote():
-#     """Get stock quote."""
-#     # Require that a user input a stock's symbol, implemented as a text field whose name is symbol
-#     # Submit the user's input via POST to /quote
-#     if request.method == "POST":
-#         # Stock is a dictionary where the keys are "name", "price", and "symbol"
-#         stock = lookup(request.form.get("symbol"))
-#         if not request.form.get("symbol"):
-#             return apology("Please input in the stock symbol")
-#         else:
-#             return redirect("/quoted.html", symbol=symbol)
-#     return render_template("/quote.html")
 
 # TODO fix
 # @app.route("/buy", methods=["GET", "POST"])
